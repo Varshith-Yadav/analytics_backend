@@ -1,0 +1,19 @@
+customers (1) — (M) orders (1) — (M) order_items (M) — (1) products
+
+
+
+
+Analytics we can Build from This 
+
+| Query                | Example endpoint                       |
+| -------------------- | -------------------------------------- |
+| Total revenue        | `/metrics/sales/total`                 |
+| Revenue by country   | `/metrics/sales/by-country`            |
+| Daily sales trend    | `/metrics/sales/daily?start=..&end=..` |
+| Top selling products | `/metrics/products/top?limit=5`        |
+| Avg order value      | `/metrics/sales/avg-order-value`       |
+| Orders count         | `/metrics/orders/count`                |
+
+
+
+
