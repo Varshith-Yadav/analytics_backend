@@ -1,0 +1,7 @@
+subscription_id,customer_id,plan_name,plan_type,amount,status,currency,billing_cycle_start,billing_cycle_end,cancelled_at,mrr
+SUB_001,CUST_3001,Basic,monthly,9.99,active,USD,2024-01-01 00:00:00,2024-01-31 23:59:59,,9.99
+SUB_002,CUST_3002,Pro,monthly,29.99,active,USD,2024-01-01 00:00:00,2024-01-31 23:59:59,,29.99
+SUB_003,CUST_3003,Enterprise,annual,999.99,active,USD,2024-01-01 00:00:00,2024-12-31 23:59:59,,83.33
+SUB_004,CUST_3004,Basic,annual,99.99,cancelled,USD,2024-01-01 00:00:00,2024-12-31 23:59:59,2024-06-15 00:00:00,8.33
+SUB_005,CUST_3005,Pro,monthly,29.99,trialing,USD,2024-01-15 00:00:00,2024-02-14 23:59:59,,29.99
+

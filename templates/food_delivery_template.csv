@@ -1,0 +1,7 @@
+order_id,restaurant_name,cuisine_type,order_amount,delivery_fee,tip_amount,total_amount,customer_id,city,delivery_status,order_date,delivery_time_minutes
+ORD_001,Pizza Palace,Italian,500.00,30.00,50.00,580.00,CUST_2001,Mumbai,delivered,2024-01-15 12:30:00,25
+ORD_002,Burger King,Fast Food,300.00,25.00,0.00,325.00,CUST_2002,Delhi,delivered,2024-01-16 13:45:00,20
+ORD_003,Spice Garden,Indian,800.00,40.00,100.00,940.00,CUST_2003,Mumbai,delivered,2024-01-17 19:20:00,35
+ORD_004,Sushi House,Japanese,1200.00,50.00,150.00,1400.00,CUST_2004,Bangalore,out_for_delivery,2024-01-18 20:00:00,
+ORD_005,Taco Bell,Mexican,400.00,30.00,0.00,430.00,CUST_2005,Delhi,preparing,2024-01-19 18:30:00,
+

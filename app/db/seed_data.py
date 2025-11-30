@@ -1,55 +1,97 @@
-# app/db/seed_data.py
-from faker import Faker
+"""Script to seed the database with sample analytics data"""
+from app.database import SessionLocal, init_db
+from app.models import SalesTransaction
+from datetime import datetime, timedelta
 import random
-from .database import SessionLocal, engine, Base
-from .models import Customer, Product, Order, OrderItem
 
-fake = Faker()
+# Sample data
+PRODUCTS = [
+    ("Laptop Pro", "Electronics", "North"),
+    ("Laptop Pro", "Electronics", "South"),
+    ("Laptop Pro", "Electronics", "East"),
+    ("Laptop Pro", "Electronics", "West"),
+    ("Smartphone X", "Electronics", "North"),
+    ("Smartphone X", "Electronics", "South"),
+    ("Smartphone X", "Electronics", "East"),
+    ("Smartphone X", "Electronics", "West"),
+    ("Wireless Mouse", "Electronics", "North"),
+    ("Wireless Mouse", "Electronics", "South"),
+    ("Office Chair", "Furniture", "North"),
+    ("Office Chair", "Furniture", "South"),
+    ("Office Chair", "Furniture", "East"),
+    ("Desk Lamp", "Furniture", "North"),
+    ("Desk Lamp", "Furniture", "West"),
+    ("Coffee Maker", "Appliances", "North"),
+    ("Coffee Maker", "Appliances", "South"),
+    ("Coffee Maker", "Appliances", "East"),
+    ("Coffee Maker", "Appliances", "West"),
+    ("Blender", "Appliances", "North"),
+    ("Blender", "Appliances", "South"),
+    ("Running Shoes", "Sports", "North"),
+    ("Running Shoes", "Sports", "South"),
+    ("Running Shoes", "Sports", "East"),
+    ("Yoga Mat", "Sports", "West"),
+]
 
-def seed():
-    Base.metadata.create_all(bind=engine)
+
+def seed_database(num_transactions: int = 1000):
+    """Seed database with sample sales transactions"""
+    init_db()
     db = SessionLocal()
 
-    # Seed Customers
-    customers = [
-        Customer(name=fake.name(), email=fake.email(), country=fake.country())
-        for _ in range(100)
-    ]
-    db.add_all(customers)
-    db.commit()
-
-    # Seed Products
-    products = [
-        Product(name=fake.word(), category=random.choice(["Electronics", "Fashion", "Books"]), price=random.uniform(10, 500))
-        for _ in range(50)
-    ]
-    db.add_all(products)
-    db.commit()
-
-    customers = db.query(Customer).all()
-    products = db.query(Product).all()
-
-    # Seed Orders and Order Items
-    for _ in range(500):  # 500 sample orders
-        customer = random.choice(customers)
-        status = random.choice(["PAID", "CANCELLED", "REFUNDED"])
-        order = Order(customer_id=customer.id, status=status, total_amount=0.0)
-        db.add(order)
+    try:
+        # Clear existing data
+        db.query(SalesTransaction).delete()
         db.commit()
 
-        total = 0
-        for _ in range(random.randint(1, 4)):
-            product = random.choice(products)
-            quantity = random.randint(1, 3)
-            item = OrderItem(order_id=order.id, product_id=product.id, quantity=quantity, price=product.price)
-            db.add(item)
-            total += product.price * quantity
+        # Generate transactions
+        base_date = datetime.now() - timedelta(days=365)
+        transactions = []
 
-        order.total_amount = total
+        for i in range(num_transactions):
+            product_name, category, region = random.choice(PRODUCTS)
+            sale_date = base_date + timedelta(
+                days=random.randint(0, 365),
+                hours=random.randint(0, 23),
+                minutes=random.randint(0, 59)
+            )
+
+            # Vary amounts based on product
+            if "Laptop" in product_name:
+                amount = random.uniform(800, 1500)
+                quantity = random.randint(1, 3)
+            elif "Smartphone" in product_name:
+                amount = random.uniform(400, 800)
+                quantity = random.randint(1, 5)
+            elif "Chair" in product_name:
+                amount = random.uniform(150, 400)
+                quantity = random.randint(1, 2)
+            else:
+                amount = random.uniform(20, 200)
+                quantity = random.randint(1, 10)
+
+            transaction = SalesTransaction(
+                product_name=product_name,
+                category=category,
+                amount=round(amount, 2),
+                quantity=quantity,
+                region=region,
+                sale_date=sale_date
+            )
+            transactions.append(transaction)
+
+        db.bulk_save_objects(transactions)
         db.commit()
+        print(f"✓ Seeded {num_transactions} transactions successfully!")
 
-    print("Seed complete")
+    except Exception as e:
+        db.rollback()
+        print(f"✗ Error seeding database: {e}")
+        raise
+    finally:
+        db.close()
 
 
 if __name__ == "__main__":
-    seed()
+    seed_database(1000)
+

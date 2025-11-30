@@ -1,0 +1,33 @@
+[
+  {
+    "product_name": "Laptop Pro",
+    "category": "Electronics",
+    "amount": 1200.00,
+    "quantity": 2,
+    "region": "North",
+    "customer_id": "CUST_1001",
+    "payment_method": "credit_card",
+    "sale_date": "2024-01-15T10:30:00"
+  },
+  {
+    "product_name": "Smartphone X",
+    "category": "Electronics",
+    "amount": 699.99,
+    "quantity": 1,
+    "region": "South",
+    "customer_id": "CUST_1002",
+    "payment_method": "debit_card",
+    "sale_date": "2024-01-16T14:20:00"
+  },
+  {
+    "product_name": "Office Chair",
+    "category": "Furniture",
+    "amount": 299.50,
+    "quantity": 1,
+    "region": "East",
+    "customer_id": "CUST_1003",
+    "payment_method": "paypal",
+    "sale_date": "2024-01-17T09:15:00"
+  }
+]
+
