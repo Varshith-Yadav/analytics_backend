@@ -2,7 +2,9 @@ services:
   - type: web
     name: analytics-backend
     env: python
-    buildCommand: pip install -r requirements.txt
+    pythonVersion: "3.11"
+    rootDir: .
+    buildCommand: pip install --upgrade pip && pip install -r requirements.txt
     startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT
     envVars:
       - key: DATABASE_URL
@@ -10,7 +12,7 @@ services:
           name: analytics-db
           property: connectionString
     healthCheckPath: /health
-    plan: starter  # or free, starter, standard, pro, etc.
+    plan: free
 
 databases:
   - name: analytics-db
