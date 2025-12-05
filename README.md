@@ -80,7 +80,7 @@ This application provides RESTful endpoints for aggregations, filtering, and cha
 
 4. **Initialize the database and seed sample data (optional)**
    ```bash
-   python -m app.seed_data
+   python -m app.scripts.seed_data
    ```
 
    This will create sample data for all three analytics domains:
@@ -369,25 +369,69 @@ All errors return JSON responses with error details:
 .
 ├── app/
 │   ├── __init__.py
-│   ├── main.py              # FastAPI application and routes
-│   ├── database.py          # Database configuration
-│   ├── models.py            # SQLAlchemy models (Sales, FoodOrder, Subscription)
-│   ├── schemas.py           # Pydantic schemas
-│   ├── services.py          # Business logic and analytics service
-│   └── seed_data.py         # Database seeding script
+│   ├── main.py                    # FastAPI application entry point
+│   ├── core/                      # Core configuration and database
+│   │   ├── __init__.py
+│   │   ├── config.py              # Application settings
+│   │   └── database.py            # Database configuration and session management
+│   ├── models/                    # SQLAlchemy database models
+│   │   ├── __init__.py
+│   │   ├── base.py               # Base model class
+│   │   ├── sales.py              # Sales/E-commerce models
+│   │   ├── food_delivery.py      # Food delivery models
+│   │   └── saas.py               # SaaS subscription models
+│   ├── schemas/                   # Pydantic schemas for API
+│   │   ├── __init__.py
+│   │   └── common.py             # Common schemas (enums, request/response models)
+│   ├── services/                  # Business logic layer
+│   │   ├── __init__.py
+│   │   ├── analytics.py          # Analytics service (aggregations, chart data)
+│   │   └── import_service.py     # Data import service
+│   ├── api/                       # API routes
+│   │   ├── __init__.py
+│   │   └── v1/                   # API version 1
+│   │       ├── __init__.py
+│   │       ├── analytics.py      # Analytics endpoints
+│   │       └── import_routes.py  # Data import endpoints
+│   ├── utils/                     # Utility functions
+│   │   ├── __init__.py
+│   │   └── data_import.py        # Data import utilities (CSV/JSON)
+│   └── scripts/                   # Utility scripts
+│       ├── __init__.py
+│       └── seed_data.py          # Database seeding script
 ├── tests/
 │   ├── __init__.py
-│   ├── conftest.py          # Pytest fixtures
-│   ├── test_aggregations.py # Aggregation tests (all domains)
-│   ├── test_filters.py      # Filter tests (all domains)
-│   ├── test_chart_endpoint.py # Chart endpoint tests
-│   ├── test_metrics_summary.py # Summary tests
-│   └── test_health.py       # Health check tests
-├── sample_client.py         # Sample client script
-├── requirements.txt         # Python dependencies
-├── README.md               # This file
-└── analytics.db            # SQLite database (created on first run)
+│   ├── conftest.py               # Pytest fixtures
+│   ├── test_aggregations.py      # Aggregation tests (all domains)
+│   ├── test_filters.py           # Filter tests (all domains)
+│   ├── test_chart_endpoint.py    # Chart endpoint tests
+│   ├── test_metrics_summary.py   # Summary tests
+│   └── test_health.py            # Health check tests
+├── templates/                     # Data import templates
+│   ├── sales_template.csv
+│   ├── sales_template.json
+│   ├── food_delivery_template.csv
+│   └── saas_template.csv
+├── sample_client.py              # Sample client script
+├── requirements.txt              # Python dependencies
+├── README.md                     # This file
+├── run.py                        # Quick start script
+├── docker-compose.yml            # Docker configuration
+├── Dockerfile                    # Docker image definition
+└── analytics.db                  # SQLite database (created on first run)
 ```
+
+### Architecture Overview
+
+The project follows a **layered architecture** with clear separation of concerns:
+
+- **Core Layer** (`app/core/`): Database configuration and application settings
+- **Models Layer** (`app/models/`): Database models organized by domain
+- **Schemas Layer** (`app/schemas/`): API request/response validation schemas
+- **Services Layer** (`app/services/`): Business logic and domain services
+- **API Layer** (`app/api/`): REST API endpoints organized by version
+- **Utils Layer** (`app/utils/`): Reusable utility functions
+- **Scripts Layer** (`app/scripts/`): Database management and seeding scripts
 
 ## Technology Stack
 
@@ -405,20 +449,20 @@ Organizations can import their own datasets in three ways:
 
 **Sales Data:**
 ```bash
-python -m app.data_import sales your_sales_data.csv csv
-python -m app.data_import sales your_sales_data.json json
+python -m app.utils.data_import sales your_sales_data.csv csv
+python -m app.utils.data_import sales your_sales_data.json json
 ```
 
 **Food Delivery Data:**
 ```bash
-python -m app.data_import food_delivery your_orders.csv csv
-python -m app.data_import food_delivery your_orders.json json
+python -m app.utils.data_import food_delivery your_orders.csv csv
+python -m app.utils.data_import food_delivery your_orders.json json
 ```
 
 **SaaS Data:**
 ```bash
-python -m app.data_import saas your_subscriptions.csv csv
-python -m app.data_import saas your_subscriptions.json json
+python -m app.utils.data_import saas your_subscriptions.csv csv
+python -m app.utils.data_import saas your_subscriptions.json json
 ```
 
 ### Method 2: API Upload (Recommended)
@@ -521,23 +565,23 @@ The chart-ready JSON format makes it easy to integrate with any frontend visuali
 
 ### Adding New Analytics Domains
 
-1. Add a new model in `app/models.py`
-2. Add configuration in `AnalyticsService.ANALYTICS_CONFIG` in `app/services.py`
-3. Update `FilterParams` in `app/schemas.py` if needed
-4. Add seed data function in `app/seed_data.py`
+1. Add a new model in `app/models/` (create a new file or add to existing domain file)
+2. Add configuration in `AnalyticsService.ANALYTICS_CONFIG` in `app/services/analytics.py`
+3. Update `FilterParams` in `app/schemas/common.py` if needed
+4. Add seed data function in `app/scripts/seed_data.py`
 5. Add tests in `tests/`
 
 ### Adding New Aggregations
 
-1. Add the aggregation type to `AggregationType` enum in `app/schemas.py`
-2. Implement the logic in `AnalyticsService.aggregate()` in `app/services.py`
+1. Add the aggregation type to `AggregationType` enum in `app/schemas/common.py`
+2. Implement the logic in `AnalyticsService.aggregate()` in `app/services/analytics.py`
 3. Add tests in `tests/test_aggregations.py`
 
 ### Adding New Filters
 
-1. Add filter field to `FilterParams` in `app/schemas.py`
-2. Add filter mapping in `ANALYTICS_CONFIG` in `app/services.py`
-3. Implement filter logic in `AnalyticsService.apply_filters()` in `app/services.py`
+1. Add filter field to `FilterParams` in `app/schemas/common.py`
+2. Add filter mapping in `ANALYTICS_CONFIG` in `app/services/analytics.py`
+3. Implement filter logic in `AnalyticsService.apply_filters()` in `app/services/analytics.py`
 4. Add tests in `tests/test_filters.py`
 
 ## License

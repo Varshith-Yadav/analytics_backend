@@ -4,7 +4,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from fastapi.testclient import TestClient
 
-from app.database import Base, get_db
+from app.core.database import Base, get_db
 from app.main import app
 from app.models import SalesTransaction, FoodOrder, Subscription
 from datetime import datetime, timedelta

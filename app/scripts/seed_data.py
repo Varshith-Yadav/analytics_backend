@@ -1,5 +1,5 @@
 """Script to seed the database with sample analytics data for all three domains"""
-from app.database import SessionLocal, init_db
+from app.core.database import SessionLocal, init_db
 from app.models import SalesTransaction, FoodOrder, Subscription
 from datetime import datetime, timedelta
 import random
@@ -242,3 +242,4 @@ def seed_all(num_sales: int = 500, num_orders: int = 500, num_subscriptions: int
 
 if __name__ == "__main__":
     seed_all(500, 500, 300)
+

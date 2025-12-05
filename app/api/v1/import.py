@@ -1,13 +1,8 @@
-"""
-API endpoints for data ingestion
-Allows organizations to upload their data via API
-"""
-from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Form
+"""Data import API endpoints"""
+from fastapi import APIRouter, Depends, HTTPException, UploadFile, File
 from sqlalchemy.orm import Session
-from typing import Optional
-from app.database import get_db
-from app.data_import import DataImporter
-from app.schemas import AnalyticsType
+from app.core.database import get_db
+from app.utils.data_import import DataImporter
 import tempfile
 import os
 

@@ -1,9 +1,9 @@
+"""Analytics service for performing aggregations and chart data generation"""
 from sqlalchemy.orm import Session
 from sqlalchemy import func
 from app.models import SalesTransaction, FoodOrder, Subscription
 from app.schemas import AggregationType, FilterParams, AnalyticsType
-from typing import Optional, List, Dict, Any
-from datetime import datetime
+from typing import Optional, Dict, Any
 
 
 class AnalyticsService:
@@ -272,3 +272,4 @@ class AnalyticsService:
                 "total_points": len(data_points)
             }
         }
+

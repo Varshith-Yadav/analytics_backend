@@ -1,3 +1,4 @@
+"""Common schemas used across all analytics domains"""
 from pydantic import BaseModel
 from typing import Optional, List, Dict, Any
 from datetime import datetime
@@ -18,45 +19,6 @@ class AggregationType(str, Enum):
     COUNT = "count"
     MIN = "min"
     MAX = "max"
-
-
-class TimeRange(BaseModel):
-    """Time range filter"""
-    start_date: Optional[datetime] = None
-    end_date: Optional[datetime] = None
-
-
-class SalesMetricsResponse(BaseModel):
-    """Response model for sales metrics"""
-    metric: str
-    value: float
-    filters_applied: Dict[str, Any] = {}
-
-
-class AggregationResponse(BaseModel):
-    """Response model for aggregations"""
-    analytics_type: str
-    aggregation_type: str
-    field: str
-    value: Optional[float] = None
-    group_by: Optional[str] = None
-    groups: Optional[List[Dict[str, Any]]] = None
-    filters_applied: Dict[str, Any] = {}
-
-
-class ChartDataPoint(BaseModel):
-    """Data point for chart visualization"""
-    label: str
-    value: float
-    metadata: Optional[Dict[str, Any]] = None
-
-
-class ChartResponse(BaseModel):
-    """Chart-ready JSON response"""
-    analytics_type: str
-    chart_type: str
-    data: List[ChartDataPoint]
-    metadata: Dict[str, Any] = {}
 
 
 class FilterParams(BaseModel):
@@ -93,4 +55,30 @@ class FilterParams(BaseModel):
                 "end_date": "2024-12-31T23:59:59"
             }
         }
+
+
+class AggregationResponse(BaseModel):
+    """Response model for aggregations"""
+    analytics_type: str
+    aggregation_type: str
+    field: str
+    value: Optional[float] = None
+    group_by: Optional[str] = None
+    groups: Optional[List[Dict[str, Any]]] = None
+    filters_applied: Dict[str, Any] = {}
+
+
+class ChartDataPoint(BaseModel):
+    """Data point for chart visualization"""
+    label: str
+    value: float
+    metadata: Optional[Dict[str, Any]] = None
+
+
+class ChartResponse(BaseModel):
+    """Chart-ready JSON response"""
+    analytics_type: str
+    chart_type: str
+    data: List[ChartDataPoint]
+    metadata: Dict[str, Any] = {}
 

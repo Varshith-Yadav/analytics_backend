@@ -4,11 +4,11 @@ Supports CSV and JSON import for all three analytics types
 """
 import csv
 import json
-from typing import List, Dict, Any, Optional
+from typing import Optional
 from datetime import datetime
 from sqlalchemy.orm import Session
 from app.models import SalesTransaction, FoodOrder, Subscription
-from app.database import SessionLocal
+from app.core.database import SessionLocal
 import uuid
 
 
@@ -142,17 +142,28 @@ class DataImporter:
         - order_id, restaurant_name, cuisine_type, order_amount, delivery_fee, 
           tip_amount, total_amount, customer_id (optional), city, delivery_status,
           order_date, delivery_time_minutes (optional)
+        
+        Note: Duplicate order_id values will be skipped.
         """
         if db is None:
             db = SessionLocal()
         
         try:
             orders = []
+            skipped = 0
             with open(file_path, 'r', encoding='utf-8') as f:
                 reader = csv.DictReader(f)
                 for row in reader:
+                    order_id = row.get('order_id', f"ORD_{uuid.uuid4().hex[:8].upper()}").strip()
+                    
+                    # Check if order_id already exists
+                    existing = db.query(FoodOrder).filter(FoodOrder.order_id == order_id).first()
+                    if existing:
+                        skipped += 1
+                        continue
+                    
                     order = FoodOrder(
-                        order_id=row.get('order_id', f"ORD_{uuid.uuid4().hex[:8].upper()}"),
+                        order_id=order_id,
                         restaurant_name=row.get('restaurant_name', '').strip(),
                         cuisine_type=row.get('cuisine_type', '').strip(),
                         order_amount=float(row.get('order_amount', 0)),
@@ -167,9 +178,14 @@ class DataImporter:
                     )
                     orders.append(order)
             
-            db.bulk_save_objects(orders)
-            db.commit()
-            print(f"✓ Imported {len(orders)} food orders from {file_path}")
+            if orders:
+                db.bulk_save_objects(orders)
+                db.commit()
+            
+            if skipped > 0:
+                print(f"✓ Imported {len(orders)} food orders from {file_path} (skipped {skipped} duplicates)")
+            else:
+                print(f"✓ Imported {len(orders)} food orders from {file_path}")
             return len(orders)
         except Exception as e:
             db.rollback()
@@ -181,7 +197,11 @@ class DataImporter:
 
     @staticmethod
     def import_food_orders_from_json(file_path: str, db: Optional[Session] = None) -> int:
-        """Import food delivery orders from JSON file"""
+        """
+        Import food delivery orders from JSON file.
+        
+        Note: Duplicate order_id values will be skipped.
+        """
         if db is None:
             db = SessionLocal()
         
@@ -190,9 +210,18 @@ class DataImporter:
                 data = json.load(f)
             
             orders = []
+            skipped = 0
             for item in data:
+                order_id = item.get('order_id', f"ORD_{uuid.uuid4().hex[:8].upper()}")
+                
+                # Check if order_id already exists
+                existing = db.query(FoodOrder).filter(FoodOrder.order_id == order_id).first()
+                if existing:
+                    skipped += 1
+                    continue
+                
                 order = FoodOrder(
-                    order_id=item.get('order_id', f"ORD_{uuid.uuid4().hex[:8].upper()}"),
+                    order_id=order_id,
                     restaurant_name=item.get('restaurant_name', ''),
                     cuisine_type=item.get('cuisine_type', ''),
                     order_amount=float(item.get('order_amount', 0)),
@@ -207,9 +236,14 @@ class DataImporter:
                 )
                 orders.append(order)
             
-            db.bulk_save_objects(orders)
-            db.commit()
-            print(f"✓ Imported {len(orders)} food orders from {file_path}")
+            if orders:
+                db.bulk_save_objects(orders)
+                db.commit()
+            
+            if skipped > 0:
+                print(f"✓ Imported {len(orders)} food orders from {file_path} (skipped {skipped} duplicates)")
+            else:
+                print(f"✓ Imported {len(orders)} food orders from {file_path}")
             return len(orders)
         except Exception as e:
             db.rollback()
@@ -227,20 +261,31 @@ class DataImporter:
         Expected CSV columns:
         - subscription_id, customer_id, plan_name, plan_type, amount, status,
           currency, billing_cycle_start, billing_cycle_end, cancelled_at (optional), mrr
+        
+        Note: Duplicate subscription_id values will be skipped.
         """
         if db is None:
             db = SessionLocal()
         
         try:
             subscriptions = []
+            skipped = 0
             with open(file_path, 'r', encoding='utf-8') as f:
                 reader = csv.DictReader(f)
                 for row in reader:
+                    subscription_id = row.get('subscription_id', f"SUB_{uuid.uuid4().hex[:8].upper()}").strip()
+                    
+                    # Check if subscription_id already exists
+                    existing = db.query(Subscription).filter(Subscription.subscription_id == subscription_id).first()
+                    if existing:
+                        skipped += 1
+                        continue
+                    
                     billing_start = DataImporter.parse_date(row.get('billing_cycle_start', datetime.now().isoformat()))
                     billing_end = DataImporter.parse_date(row.get('billing_cycle_end', datetime.now().isoformat()))
                     
                     subscription = Subscription(
-                        subscription_id=row.get('subscription_id', f"SUB_{uuid.uuid4().hex[:8].upper()}"),
+                        subscription_id=subscription_id,
                         customer_id=row.get('customer_id', f"CUST_{uuid.uuid4().hex[:8]}"),
                         plan_name=row.get('plan_name', '').strip(),
                         plan_type=row.get('plan_type', 'monthly'),
@@ -254,9 +299,14 @@ class DataImporter:
                     )
                     subscriptions.append(subscription)
             
-            db.bulk_save_objects(subscriptions)
-            db.commit()
-            print(f"✓ Imported {len(subscriptions)} subscriptions from {file_path}")
+            if subscriptions:
+                db.bulk_save_objects(subscriptions)
+                db.commit()
+            
+            if skipped > 0:
+                print(f"✓ Imported {len(subscriptions)} subscriptions from {file_path} (skipped {skipped} duplicates)")
+            else:
+                print(f"✓ Imported {len(subscriptions)} subscriptions from {file_path}")
             return len(subscriptions)
         except Exception as e:
             db.rollback()
@@ -268,7 +318,11 @@ class DataImporter:
 
     @staticmethod
     def import_subscriptions_from_json(file_path: str, db: Optional[Session] = None) -> int:
-        """Import SaaS subscriptions from JSON file"""
+        """
+        Import SaaS subscriptions from JSON file.
+        
+        Note: Duplicate subscription_id values will be skipped.
+        """
         if db is None:
             db = SessionLocal()
         
@@ -277,12 +331,21 @@ class DataImporter:
                 data = json.load(f)
             
             subscriptions = []
+            skipped = 0
             for item in data:
+                subscription_id = item.get('subscription_id', f"SUB_{uuid.uuid4().hex[:8].upper()}")
+                
+                # Check if subscription_id already exists
+                existing = db.query(Subscription).filter(Subscription.subscription_id == subscription_id).first()
+                if existing:
+                    skipped += 1
+                    continue
+                
                 billing_start = DataImporter.parse_date(item.get('billing_cycle_start', datetime.now().isoformat()))
                 billing_end = DataImporter.parse_date(item.get('billing_cycle_end', datetime.now().isoformat()))
                 
                 subscription = Subscription(
-                    subscription_id=item.get('subscription_id', f"SUB_{uuid.uuid4().hex[:8].upper()}"),
+                    subscription_id=subscription_id,
                     customer_id=item.get('customer_id', f"CUST_{uuid.uuid4().hex[:8]}"),
                     plan_name=item.get('plan_name', ''),
                     plan_type=item.get('plan_type', 'monthly'),
@@ -296,9 +359,14 @@ class DataImporter:
                 )
                 subscriptions.append(subscription)
             
-            db.bulk_save_objects(subscriptions)
-            db.commit()
-            print(f"✓ Imported {len(subscriptions)} subscriptions from {file_path}")
+            if subscriptions:
+                db.bulk_save_objects(subscriptions)
+                db.commit()
+            
+            if skipped > 0:
+                print(f"✓ Imported {len(subscriptions)} subscriptions from {file_path} (skipped {skipped} duplicates)")
+            else:
+                print(f"✓ Imported {len(subscriptions)} subscriptions from {file_path}")
             return len(subscriptions)
         except Exception as e:
             db.rollback()
@@ -314,7 +382,7 @@ def import_data_cli():
     import sys
     
     if len(sys.argv) < 4:
-        print("Usage: python -m app.data_import <analytics_type> <file_path> <format>")
+        print("Usage: python -m app.utils.data_import <analytics_type> <file_path> <format>")
         print("  analytics_type: sales | food_delivery | saas")
         print("  file_path: Path to CSV or JSON file")
         print("  format: csv | json")
