@@ -111,9 +111,31 @@ The API will be available at:
 
 ### Production deployment
 
+#### Local Production
 ```bash
 uvicorn app.main:app --host 0.0.0.0 --port 8000
 ```
+
+#### Deploy to Render (Recommended)
+
+This application is configured for easy deployment to Render. See [DEPLOYMENT.md](DEPLOYMENT.md) for detailed instructions.
+
+**Quick Start:**
+1. Push your code to GitHub
+2. Connect your repository to Render
+3. Render will automatically detect `render.yml` and create:
+   - PostgreSQL database
+   - Web service with proper configuration
+4. Your API will be live at `https://your-app.onrender.com`
+
+**Features:**
+- ✅ Automatic PostgreSQL database setup
+- ✅ Environment variables configured
+- ✅ Health check endpoint
+- ✅ HTTPS enabled
+- ✅ Auto-deploy on git push
+
+For detailed deployment instructions, see [DEPLOYMENT.md](DEPLOYMENT.md).
 
 ## Testing
 
